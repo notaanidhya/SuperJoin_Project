@@ -31,6 +31,15 @@ class FactStore:
                 )
         conn.close()
 
+    def delete_document(self, document_id: str):
+        conn = get_connection(self.db_path)
+        with conn:
+            conn.execute("DELETE FROM relationships WHERE fact_a_id IN (SELECT fact_id FROM facts WHERE document_id = ?) OR fact_b_id IN (SELECT fact_id FROM facts WHERE document_id = ?)", (document_id, document_id))
+            conn.execute("DELETE FROM facts WHERE document_id = ?", (document_id,))
+            conn.execute("DELETE FROM document_chunks WHERE document_id = ?", (document_id,))
+            conn.execute("DELETE FROM documents WHERE document_id = ?", (document_id,))
+        conn.close()
+
     def save_facts(self, facts: List[ExtractedFact]):
         if not facts:
             return

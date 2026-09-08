@@ -90,16 +90,28 @@ def test_api_upload_schema():
     test_pdf = Path("starter-datasets/delhivery/03-delhivery-q4-fy24-earnings-presentation.pdf")
     if not test_pdf.exists():
         return
-    with open(test_pdf, "rb") as f:
-        response = client.post(
-            "/api/documents/upload?max_pages=1",
-            files={"file": ("test_upload.pdf", f, "application/pdf")}
-        )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "success"
-    assert "extracted_facts" in data
-    assert "discovered_relationships" in data
-    assert isinstance(data["extracted_facts"], list)
-    assert isinstance(data["discovered_relationships"], list)
+    try:
+        with open(test_pdf, "rb") as f:
+            response = client.post(
+                "/api/documents/upload?max_pages=1",
+                files={"file": ("test_upload.pdf", f, "application/pdf")}
+            )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "success"
+        assert "extracted_facts" in data
+        assert "discovered_relationships" in data
+        assert isinstance(data["extracted_facts"], list)
+        assert isinstance(data["discovered_relationships"], list)
+    finally:
+        from app.database import get_connection
+        from app.services.fact_store import FactStore
+        conn = get_connection()
+        c = conn.cursor()
+        c.execute("SELECT document_id FROM documents WHERE filename = 'test_upload.pdf'")
+        rows = c.fetchall()
+        conn.close()
+        store = FactStore()
+        for (doc_id,) in rows:
+            store.delete_document(doc_id)
 
