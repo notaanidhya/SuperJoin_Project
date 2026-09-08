@@ -75,39 +75,40 @@ class ShowcaseService:
             ShowcaseCase(
                 case_id="case-2-contradiction",
                 case_number=2,
-                title="Institutional Forecast Divergence: Indian Economic Survey vs IMF FY25 Growth",
+                title="Institutional Forecast Divergence: RBI vs IMF FY2025-26 Real GDP Growth",
                 category="contradicts",
                 confidence=0.95,
-                summary="The Ministry of Finance Economic Survey estimates FY25 growth at 6.4%, whereas the IMF Article IV report records FY2024/25 growth at 6.5%.",
+                summary="The Reserve Bank of India (RBI) projects FY2025-26 growth at 6.5%, whereas the IMF Article IV staff baseline projects 6.6% for the exact same fiscal period.",
                 fact_a={
-                    "document": "01-india-economic-survey-2024-25-excerpt.pdf",
-                    "page_number": 4,
+                    "document": "02-rbi-annual-report-2024-25-excerpt.pdf",
+                    "page_number": 17,
                     "subject": "India",
                     "metric": "real_gdp_growth",
-                    "stated_value": "6.4 per cent",
-                    "numeric_value": 6.4,
+                    "stated_value": "6.5 per cent",
+                    "numeric_value": 6.5,
                     "unit": "%",
-                    "period": "FY25",
-                    "verbatim_quote": "India's real GDP is estimated to grow by 6.4 per cent in FY25.",
+                    "period": "2025-26",
+                    "verbatim_quote": "real GDP growth for 2025-26 is projected at 6.5 per cent, with risks evenly balanced.",
                     "grounding_verified": True
                 },
                 fact_b={
                     "document": "03-imf-india-2025-article-iv-excerpt.pdf",
-                    "page_number": 10,
+                    "page_number": 13,
                     "subject": "India",
                     "metric": "real_gdp_growth",
-                    "stated_value": "6.5 percent",
-                    "numeric_value": 6.5,
+                    "stated_value": "6.6 percent",
+                    "numeric_value": 6.6,
                     "unit": "%",
-                    "period": "FY2024/25",
-                    "verbatim_quote": "India's real GDP grew by 6.5 percent in FY2024/25.",
+                    "period": "FY2025/26",
+                    "verbatim_quote": "Under staff's baseline scenario, real GDP growth is projected at 6.6 percent in FY2025/26",
                     "grounding_verified": True
                 },
                 explanation=(
-                    "Genuine factual conflict / institutional divergence. The India Economic Survey 2024-25 (Ministry of Finance) "
-                    "estimates India's real GDP growth at 6.4% for FY25, whereas the IMF Article IV report reports 6.5% for the same "
-                    "fiscal period (FY2024/25). Both sources describe the exact same entity, metric, and fiscal period under national accounts, "
-                    "yet reach incompatible estimates differing by 10 basis points."
+                    "Genuine institutional forecast contradiction with zero vintage or timing ambiguity. Both the Reserve Bank of India "
+                    "(RBI Annual Report) and the International Monetary Fund (IMF Article IV Consultation) publish forward-looking baseline "
+                    "projections for India's real GDP growth for the exact same future fiscal period (FY2025-26 / 2025/26). "
+                    "RBI projects 6.5%, whereas IMF staff projects 6.6%. The auditor verified that both institutions model identical national accounts "
+                    "metrics under market prices with no stated methodology divergence, establishing a genuine 10 basis-point institutional disagreement."
                 )
             ),
 

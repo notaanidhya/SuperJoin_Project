@@ -127,18 +127,19 @@ class FactStore:
         doc_row = cursor.fetchone()
         target_filename = doc_row["filename"] if doc_row else None
 
-        cursor.execute("SELECT * FROM facts WHERE document_id = ?", (target_doc_id,))
+        # Strictly quarantine ungrounded facts: only compare verified facts
+        cursor.execute("SELECT * FROM facts WHERE document_id = ? AND grounding_verified = 1", (target_doc_id,))
         target_rows = cursor.fetchall()
 
         if target_filename and target_filename != "auto_generated":
-            # Exclude facts from any document entry sharing the same underlying file
+            # Exclude facts from any document entry sharing the same underlying file, and require grounding_verified = 1
             cursor.execute("""
                 SELECT f.* FROM facts f
                 JOIN documents d ON f.document_id = d.document_id
-                WHERE d.filename != ?
+                WHERE d.filename != ? AND f.grounding_verified = 1
             """, (target_filename,))
         else:
-            cursor.execute("SELECT * FROM facts WHERE document_id != ?", (target_doc_id,))
+            cursor.execute("SELECT * FROM facts WHERE document_id != ? AND grounding_verified = 1", (target_doc_id,))
         other_rows = cursor.fetchall()
         conn.close()
 

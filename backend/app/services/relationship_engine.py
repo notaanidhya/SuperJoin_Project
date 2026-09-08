@@ -5,6 +5,8 @@ from app.models.fact import ExtractedFact
 from app.models.relationship import RelationshipType, RawRelationshipResponse, FactRelationship
 from app.services.llm_client import GeminiClient
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 REASONING_SYSTEM_INSTRUCTION = (
@@ -31,7 +33,7 @@ class RelationshipEngine:
     """Reasoning engine to evaluate, classify, and reconcile cross-document fact pairs."""
 
     def __init__(self, client: Optional[GeminiClient] = None):
-        self.client = client or GeminiClient()
+        self.client = client or GeminiClient(model=settings.gemini_reasoning_model)
 
     def classify_pair(
         self, 

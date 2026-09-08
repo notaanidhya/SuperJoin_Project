@@ -15,11 +15,11 @@ T = TypeVar("T", bound=BaseModel)
 class GeminiClient:
     """Thread-safe Gemini client wrapper with rate-limiting and retry logic."""
 
-    def __init__(self):
+    def __init__(self, model: Optional[str] = None):
         if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY is not set in environment or .env file.")
         self.client = genai.Client(api_key=settings.gemini_api_key)
-        self.model = settings.gemini_model
+        self.model = model or settings.gemini_model
         self.last_call_timestamp = 0.0
 
     def _rate_limit(self):

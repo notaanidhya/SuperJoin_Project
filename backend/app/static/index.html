@@ -843,7 +843,7 @@
       </div>
 
       <div style="margin-bottom: 20px;">
-        <div class="stat-label">Source Document Chunk (Full Paragraph Context)</div>
+        <div class="stat-label">Source Document Chunk (Full Paragraph Context · Offset Aligned to Normalized Text)</div>
         <div id="modal-chunk-text" class="mono text-secondary" style="font-size: 11px; background-color: var(--bg-page); border: 1px solid var(--border-hairline); padding: 14px; max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;"></div>
       </div>
 
@@ -1212,7 +1212,7 @@
         document.getElementById('modal-metric').textContent = f.predicate;
         document.getElementById('modal-value').textContent = f.object_value;
         document.getElementById('modal-period').textContent = f.period || 'N/A';
-        document.getElementById('modal-offset').textContent = f.char_offset_in_chunk != null ? `Offset: ${f.char_offset_in_chunk}` : 'N/A';
+        document.getElementById('modal-offset').textContent = f.char_offset_in_chunk != null ? `Offset: ${f.char_offset_in_chunk} (normalized)` : 'N/A';
         document.getElementById('modal-quote').textContent = `"${f.verbatim_quote}"`;
 
         const badge = document.getElementById('modal-grounding-badge');

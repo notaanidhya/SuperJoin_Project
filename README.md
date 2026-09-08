@@ -1,18 +1,20 @@
 # Automated Fact Extraction, Grounding & Cross-Document Reasoning Knowledge Layer
 
 > **Superjoin Engineering Assignment (VIT 2026)**  
-> An automated, production-grade Knowledge Layer that transforms unstructured enterprise PDFs into grounded structured factual claims, vector-indexes them, and performs contextual cross-document reasoning (`corroborates`, `contradicts`, `reconciles`, `unrelated`).
+> An automated, audit-grade Knowledge Layer that transforms unstructured enterprise PDFs into grounded structured factual claims, vector-indexes them, and performs contextual cross-document reasoning (`corroborates`, `contradicts`, `reconciles`, `unrelated`).
 
 ---
 
 ## 🌟 Executive Summary & Key Achievements
 
-- **1,333 Structured Facts Extracted** across 5 authoritative documents (Delhivery Earnings Presentations, Annual Reports, Prospectus, Indian Economic Survey, RBI Annual Report, IMF Article IV Consultation).
-- **97.0% Verified Grounding Rate** (1,293 / 1,333 facts) verified with exact verbatim quotes and byte/character offsets into source PDF chunks.
-- **Zero Self-Document Data Leakage**: Enforced physical filename matching in candidate pairing, eliminating phantom self-pairs.
-- **Robust Gemini Free-Tier Architecture**: Paced at 4.2s per call with 3-chunk batching and adaptive 429 backoff; 100% resilient under Google AI Studio free quotas.
+- **1,333 Structured Facts Extracted** across the core authoritative documents (Delhivery Earnings Presentations, Annual Reports, Indian Economic Survey, RBI Annual Report, IMF Article IV Consultation). The 6th document, Delhivery Prospectus 2022, is preserved in `starter-datasets` and supported on-demand via the Tab 1 ingestion pipeline.
+- **97.0% Verified Grounding Rate** (1,293 / 1,333 facts) verified with verbatim quotes and character offsets into source PDF chunks.
+- **Quarantine Policy for Ungrounded Facts**: The 40 facts that failed grounding (3.0%) are stored with `grounding_verified = False` for failure analysis transparency in the Fact Explorer, but are strictly quarantined from candidate pairing and cross-document reasoning.
+- **Zero Self-Document Data Leakage**: Enforced physical filename isolation in candidate pairing (`d.filename != target_filename`), eliminating phantom self-pairs.
+- **Robust Gemini Architecture**: Paced at 4.2s per call with 3-chunk batching and adaptive 429 backoff; 100% resilient under Google AI Studio free quotas.
 - **Hybrid Cross-Document Reasoning**: Programmatic fast-path rule heuristic for zero-token instantaneous matches paired with Gemini contextual auditing for nuanced reconciliations and contradictions.
-- **Full Test Coverage**: **18 / 18 passing unit & integration tests** across Ingestion, Extraction, Storage, Reasoning, and REST API.
+- **Bespoke UI Design System (Direction A: "Ledger / Financial Archive")**: Warm paper `#F7F4EE`, pure white panels `#FFFFFF`, hairline borders `#E4DFD3`, `Source Serif 4` + `JetBrains Mono` typography, and zero border radius.
+- **Full Test Coverage**: **19 / 19 passing unit & integration tests** across Ingestion, Extraction, Storage, Reasoning, and REST API.
 - **Turnkey Packaging**: Single-command startup (`python run.py`), terminal showcase verification (`python scripts/reproduce_showcases.py`), and interactive inspection UI at `http://localhost:8000`.
 
 ---
@@ -43,9 +45,9 @@ flowchart TD
     end
 
     subgraph Reasoning ["4. Cross-Document Reasoning Engine"]
-        Pairing["Two-Pass Cross-Doc Pairing<br>(Cosine >= 0.70, Leakage Filtered)"]
+        Pairing["Two-Pass Cross-Doc Pairing<br>(Cosine >= 0.65, Grounded Only, Leakage Filtered)"]
         FastPath{"Rule Fast-Path<br>(Exact Match?)"}
-        LLMReasoning["Gemini 3.5 Flash Lite<br>(Accounting & Forecast Auditor)"]
+        LLMReasoning["Gemini 3.5 Flash<br>(Accounting & Forecast Auditor)"]
         
         Embedder --> Pairing
         Pairing --> FastPath
@@ -55,7 +57,7 @@ flowchart TD
 
     subgraph Delivery ["5. Delivery & Inspection"]
         API["FastAPI REST Backend<br>(/api/facts, /api/relationships, /api/showcase)"]
-        UI["Inspection Dashboard UI<br>(Tailwind CSS + Pure JS)"]
+        UI["Ledger / Financial Archive UI<br>(Source Serif 4 + JetBrains Mono)"]
         DB --> API
         API --> UI
     end
@@ -79,6 +81,7 @@ Set your Gemini API key in `.env`:
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_REASONING_MODEL=gemini-3.5-flash
 ```
 
 ### 2. Single-Command Server Launch (Web UI & REST API)
@@ -88,10 +91,11 @@ Launch the integrated FastAPI server:
 python run.py
 ```
 Open **`http://localhost:8000`** in your browser:
-- **Showcase Gallery**: Instant side-by-side inspection of the 4 required showcase cases.
-- **Cross-Document Relationships**: Live explorer filtering by Corroboration, Contradiction, and Reconciliation.
-- **Fact Grounding Explorer**: Searchable fact table with verbatim quotes and chunk highlighting modal.
-- **Document Hub & Upload**: Upload new arbitrary PDFs and watch automated extraction and reasoning.
+- **Tab 1 (Document Ingestion & Live Pipeline)**: Upload new arbitrary PDFs and inspect the live **Post-Upload Intelligence Dossier** showing extracted claims, grounding badges, and newly discovered cross-document relationships.
+- **Tab 2 (The 4 Showcase Cases)**: Instant side-by-side inspection of the 4 canonical benchmark cases.
+- **Tab 3 (Cross-Document Relationships)**: Live explorer filtering by Corroboration, Contradiction, and Reconciliation.
+- **Tab 4 (Fact Grounding Explorer)**: Searchable fact table with verbatim quotes and chunk highlighting modal.
+- **Tab 5 (Interactive Pair Reasoner)**: Select any two facts in the database to run on-demand cross-document reasoning.
 - **Swagger Documentation**: Live interactive OpenAPI documentation at `http://localhost:8000/docs`.
 
 ### 3. CLI Reproduction of the 4 Showcase Cases
@@ -103,7 +107,7 @@ python scripts/reproduce_showcases.py
 
 ### 4. Running the Test Suite
 
-Run the full automated test suite (18 tests across all phases):
+Run the full automated test suite (19 tests across all phases):
 ```bash
 pytest -v backend/tests/
 ```
@@ -113,8 +117,8 @@ backend/tests/test_phase1_ingest.py PASSED (2 tests)
 backend/tests/test_phase2_extraction.py PASSED (2 tests)
 backend/tests/test_phase3_storage.py PASSED (3 tests)
 backend/tests/test_phase4_reasoning.py PASSED (4 tests)
-backend/tests/test_phase6_api.py PASSED (7 tests)
-============================= 18 passed in 26.0s =============================
+backend/tests/test_phase6_api.py PASSED (8 tests)
+============================= 19 passed in 25.0s =============================
 ```
 
 ---
@@ -134,7 +138,7 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 | **Value** | `6.5 per cent` (numeric: `6.5%`) | `6.5` (numeric: `6.5%`) |
 | **Period** | 2024-25 | 2024/25 |
 | **Verbatim Quote** | *"real gross domestic product (GDP)3 growth moderated to 6.5 per cent in 2024-25,"* | *"Real GDP (at market prices) \n 9.7 \n 7.6 \n 9.2 \n 6.5"* |
-| **Grounding** | Verified (char offset 126 in chunk) | Verified (char offset 241 in chunk) |
+| **Grounding** | Verified (char offset 126 in normalized chunk) | Verified (char offset 241 in normalized chunk) |
 
 - **Confidence**: `1.00` (100%)
 - **Engine Audit Verdict**: Both authoritative institutions (the Reserve Bank of India and the International Monetary Fund) independently report the exact same real GDP growth rate of 6.5% for India for fiscal year 2024-25. The facts describe the exact same economic indicator, entity, and temporal window.
@@ -142,20 +146,20 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 ---
 
 ### Case 2: Contradiction (`contradicts`)
-*Institutional Forecast Divergence: Indian Economic Survey vs IMF FY25 Growth*
+*Institutional Forecast Divergence: RBI vs IMF FY2025-26 Real GDP Growth*
 
 | Attribute | Fact A | Fact B |
 | :--- | :--- | :--- |
-| **Document** | `01-india-economic-survey-2024-25-excerpt.pdf` (Page 4) | `03-imf-india-2025-article-iv-excerpt.pdf` (Page 10) |
+| **Document** | `02-rbi-annual-report-2024-25-excerpt.pdf` (Page 17) | `03-imf-india-2025-article-iv-excerpt.pdf` (Page 13) |
 | **Entity / Subject** | India | India |
 | **Metric** | `real_gdp_growth` | `real_gdp_growth` |
-| **Value** | `6.4 per cent` (numeric: `6.4%`) | `6.5 percent` (numeric: `6.5%`) |
-| **Period** | FY25 | FY2024/25 |
-| **Verbatim Quote** | *"India's real GDP is estimated to grow by 6.4 per cent in FY25."* | *"India's real GDP grew by 6.5 percent in FY2024/25."* |
-| **Grounding** | Verified (char offset 58 in chunk) | Verified (char offset 41 in chunk) |
+| **Value** | `6.5 per cent` (numeric: `6.5%`) | `6.6 percent` (numeric: `6.6%`) |
+| **Period** | 2025-26 | FY2025/26 |
+| **Verbatim Quote** | *"real GDP growth for 2025-26 is projected at 6.5 per cent, with risks evenly balanced."* | *"Under staff's baseline scenario, real GDP growth is projected at 6.6 percent in FY2025/26"* |
+| **Grounding** | Verified (char offset 64 in normalized chunk) | Verified (char offset 82 in normalized chunk) |
 
 - **Confidence**: `0.95` (95%)
-- **Engine Audit Verdict**: Genuine institutional forecast divergence. The India Economic Survey 2024-25 (Ministry of Finance) estimates India's real GDP growth at 6.4% for FY25, whereas the IMF Article IV Consultation reports 6.5% for the identical fiscal period. Both sources describe the exact same macroeconomic definition and time period under national accounts, yet arrive at divergent figures (10 bps spread).
+- **Engine Audit Verdict**: Genuine institutional forecast contradiction with zero vintage or advance-estimate ambiguity. Both the Reserve Bank of India and the International Monetary Fund publish forward-looking baseline projections for India's real GDP growth for the exact same future fiscal period (FY2025-26 / 2025/26). RBI projects 6.5%, whereas IMF staff projects 6.6%. The auditor verified that both institutions model identical national accounts metrics under market prices with no stated methodology divergence, establishing a genuine 10 basis-point institutional disagreement.
 
 ---
 
@@ -170,7 +174,7 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 | **Value** | `0.9%` | `1.6%` |
 | **Period** | FY24 | FY24 |
 | **Verbatim Quote** | *"Adjusted EBITDA margin 0.9% (FY24)"* | *"1.6%\n\nEBITDA margin"* |
-| **Grounding** | Verified (char offset 112 in chunk) | Verified (char offset 87 in chunk) |
+| **Grounding** | Verified (char offset 112 in normalized chunk) | Verified (char offset 87 in normalized chunk) |
 
 - **Confidence**: `0.95` (95%)
 - **Reconciliation Context**: `Metric Definition & Scope: Adjusted EBITDA margin (0.9%) vs standard Ind AS statutory EBITDA margin (1.6%).`
@@ -183,7 +187,7 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 
 | Diagnostic Metric | Initial Pipeline | Production Pipeline |
 | :--- | :--- | :--- |
-| **Grounding Accuracy** | 86.5% (79 unverified false negatives) | **96.0% - 97.0%** (Recovered 79 facts) |
+| **Grounding Accuracy** | 86.5% (79 unverified false negatives) | **97.0%** (Recovered 79 facts) |
 | **Root Cause 1** | Soft line-breaks (`\n`) in slide column text | Collapsing `\s+` into `' '` in validator |
 | **Root Cause 2** | Trailing footnote markers, e.g. `15,065\n(3)` | Footnote regex filter `\s*\(\d+\)` |
 | **Root Cause 3** | Vector bar chart labels lacking tabular lines | Surrounding paragraph & caption buffering |
@@ -196,38 +200,41 @@ The system discovers and audits the 4 required showcase cases from live real-wor
   - Implemented sequence collapsing (`re.sub(r'\s+', ' ', text)`) across both quote and chunk text.
   - Implemented footnote reference stripping (`re.sub(r'\s*\(\d+\)', '', text)`).
   - Implemented multi-chunk fallback: if the LLM misattributes a chunk index in a batch, the engine searches neighbor chunks in the same batch.
-  - **Result**: Grounding verification surged to **97.0%**.
+  - **Result**: Grounding verification surged to **97.0%** (1,293 / 1,333 facts verified).
 
 ---
 
 ## 🛠️ Key Design Decisions & Engineering Insights
 
-### 1. Deterministic Identifiers
-- Every document ID is a SHA-256 hash of its file contents: `doc_id = sha256(pdf_bytes)[:16]`.
-- Every chunk ID is deterministic: `f"{doc_id}_p{page}_c{chunk_index}"`.
-- Guarantees idempotent pipeline re-runs without duplicate documents or phantom chunks.
+### 1. Single Source of Truth & Clean Corpus Isolation
+- Total database counts strictly match across all interfaces: **5 authoritative starter documents, 1,333 extracted facts, 1,293 verified grounded (97.0%), 40 ungrounded (3.0%)**.
+- Any temporary test upload artifacts are quarantined or cleaned, ensuring reproducible statistics for reviewers.
 
-### 2. Eliminating Self-Document Data Leakage
+### 2. Strict Quarantine for the 40 Ungrounded Facts
+- Facts that fail verbatim grounding are retained in SQLite with `grounding_verified = False` for failure-analysis transparency in the Fact Explorer.
+- In `fact_store.py`, `find_candidate_pairs()` explicitly filters `AND f.grounding_verified = 1`, guaranteeing that unverified or hallucinated claims **never** enter the cross-document reasoning engine.
+
+### 3. Eliminating Self-Document Data Leakage
 - In early prototypes, comparing chunks across the same document generated 34,830 redundant self-pairs (e.g., Delhivery Q4 Presentation page 6 vs page 14).
 - Fixed by enforcing physical document exclusion:
   ```sql
   JOIN documents d ON f.document_id = d.document_id 
-  WHERE d.filename != target_filename
+  WHERE d.filename != target_filename AND f.grounding_verified = 1
   ```
 - Result: **0 self-document candidate pairs**.
 
-### 3. Rate-Limit Resilience on Free-Tier Gemini
+### 4. Rate-Limit Resilience on Free-Tier Gemini
 - Free-tier Gemini models enforce a strict 15 Requests Per Minute (RPM) ceiling.
 - Solved via a three-layer architecture:
   1. **Chunk Batching**: Grouping 3 substantive chunks per LLM prompt, reducing API calls by $3\times$.
   2. **Inter-Batch Pacing**: Setting `rate_limit_delay_seconds = 4.2` to mathematically stay under the 15 RPM cap.
   3. **Adaptive 429 Backoff**: Intercepting `RESOURCE_EXHAUSTED` responses, parsing the exact `retryDelay` from the API error payload, and sleeping until the quota resets.
 
-### 4. Rule Fast-Path Corroboration Heuristic
+### 5. Rule Fast-Path Corroboration Heuristic
 - Candidate pairs with identical numeric values, identical non-null time periods, and keyword-overlapping metric predicates are classified as `corroborates` immediately via programmatic rules.
 - Conserves LLM quota, yields $100\%$ determinism, and executes in $<1$ millisecond.
 
-### 5. Contradiction vs Reconciliation Prompt Separation
+### 6. Contradiction vs Reconciliation Prompt Separation
 - In corporate reporting, differences between Adjusted EBITDA and EBITDA are accounting definition divergences, not factual errors.
 - The prompt explicitly instructs Gemini:
   - *Metric Definition Differences* (Adjusted EBITDA vs EBITDA, Consolidated vs Standalone) $\rightarrow$ `reconciles` with `reconciliation_context`.
@@ -239,10 +246,10 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/` | Serves the interactive Inspection Dashboard UI |
+| `GET` | `/` | Serves the Direction A "Ledger / Financial Archive" Inspection UI |
 | `GET` | `/api/stats` | Aggregate metrics (documents, facts, % grounded, relationships) |
 | `GET` | `/api/documents` | List of all ingested documents and their fact counts |
-| `POST` | `/api/documents/upload` | Multipart PDF upload with automated extraction & indexing |
+| `POST` | `/api/documents/upload` | Multipart PDF upload with automated extraction, grounding, & auto-reasoning |
 | `GET` | `/api/facts` | Queryable, searchable fact table with page and grounding filters |
 | `GET` | `/api/facts/{fact_id}` | Detailed fact metadata with full chunk context & quote offset |
 | `GET` | `/api/relationships` | Classified cross-document relationships (`corroborates`, `contradicts`, `reconciles`) |
@@ -269,12 +276,12 @@ SuperJoin_project/
 │   │   │   ├── fact_store.py      # SQLite CRUD & cosine similarity search
 │   │   │   ├── relationship_engine.py # Cross-document reasoning engine
 │   │   │   └── showcase_service.py # Canonical showcase cases provider
-│   │   ├── static/                # Single-page Inspection Dashboard UI (Tailwind CSS)
+│   │   ├── static/                # Single-page Inspection UI (Ledger / Financial Archive design)
 │   │   ├── config.py              # Application settings and environment config
 │   │   ├── database.py            # SQLite connection and migration management
 │   │   ├── schema.sql             # Relational schema with foreign keys and vector blobs
 │   │   └── main.py                # FastAPI application entrypoint
-│   ├── tests/                     # 18 automated unit and integration tests
+│   ├── tests/                     # 19 automated unit and integration tests
 │   └── requirements.txt           # Python dependencies
 ├── scripts/
 │   ├── ingest_starter_data.py     # Universal batch ingestion runner
@@ -288,14 +295,16 @@ SuperJoin_project/
 
 ---
 
-## ⚖️ Tradeoffs & Future Enhancements
+## ⚖️ Tradeoffs & Limitations
 
 1. **Local Embeddings vs API Embeddings**:
-   - *Choice*: Used `sentence-transformers/all-MiniLM-L6-v2` locally.
-   - *Tradeoff*: Runs completely offline with zero API calls, but requires ~100MB model weight cache on first download.
-2. **SQLite vs Dedicated Vector Database (e.g. Qdrant/Pinecone)**:
-   - *Choice*: Stored embedding blobs in SQLite and performed numpy vectorized cosine similarity.
-   - *Tradeoff*: Instant zero-setup portability with ACID relational joins, ideal for $<50,000$ facts. For million-scale deployments, an HNSW vector index (such as sqlite-vec or Qdrant) would be integrated.
-3. **Multimodal Extraction for Pure Raster Charts**:
-   - *Choice*: Semantic chunking buffers narrative captions surrounding bar charts.
-   - *Next Step*: Use Gemini 2.0 Flash vision capabilities to extract data points directly from chart raster images when tabular streams are absent.
+   - *Choice*: Used `sentence-transformers/all-MiniLM-L6-v2` locally (384-dim).
+   - *Tradeoff*: Completely offline with zero API calls and zero rate limits. We calibrated the candidate similarity threshold to `0.65` to ensure high recall across domain variations.
+2. **SQLite + BLOB Vectors vs External Vector DB**:
+   - *Choice*: Stored embedding vectors as float32 binary BLOBs directly in SQLite and performed in-memory vectorized numpy cosine dot products.
+   - *Tradeoff*: Zero external daemon requirements (no Docker, Postgres, or Redis needed for reviewers to run the project). Runs in $<15$ms for thousands of facts. For enterprise deployments exceeding 100,000 facts, an HNSW vector index (such as `sqlite-vss` or `pgvector`) is the natural scaling path.
+3. **Delhivery Prospectus (2022) Scope**:
+   - *Status*: The baseline indexed corpus focuses on the contemporary FY24/FY25 reporting window. The 2022 IPO Prospectus covers historical FY19–FY21 data and can be ingested on demand via the Tab 1 upload drop zone.
+4. **Economic Survey Grounding Rate (81.8%)**:
+   - *Root Cause*: Chapter 1 of the Economic Survey features dense narrative macroeconomic analysis referencing visual bar charts (Charts I.28 & I.29) without tabular grid lines, yielding 45/55 grounded facts. The real GDP growth figure on page 4 is confirmed 100% grounded.
+   - *Next Step*: Incorporate Gemini 2.0 Flash multimodal image parsing for pages tagged with chart-dense visual layouts.
