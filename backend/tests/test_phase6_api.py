@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -83,3 +84,22 @@ def test_api_ui_served():
     response = client.get("/")
     assert response.status_code == 200
     assert "Fact Knowledge Layer | Superjoin" in response.text
+
+def test_api_upload_schema():
+    """Verify upload endpoint handles PDF and returns extracted facts and discovered relationships."""
+    test_pdf = Path("starter-datasets/delhivery/03-delhivery-q4-fy24-earnings-presentation.pdf")
+    if not test_pdf.exists():
+        return
+    with open(test_pdf, "rb") as f:
+        response = client.post(
+            "/api/documents/upload?max_pages=1",
+            files={"file": ("test_upload.pdf", f, "application/pdf")}
+        )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "extracted_facts" in data
+    assert "discovered_relationships" in data
+    assert isinstance(data["extracted_facts"], list)
+    assert isinstance(data["discovered_relationships"], list)
+
