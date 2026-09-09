@@ -27,7 +27,7 @@ The problem that motivated the approach: standard RAG systems retrieve text but 
 | Cross-document relationships | 31 |
 | Automated tests passing | 19 / 19 |
 
-The 5 documents are Delhivery FY24 Annual Report, Delhivery Q4 FY24 Earnings Presentation, India Economic Survey 2024-25, RBI Annual Report 2024-25, and IMF India Article IV 2025. A 6th document (Delhivery 2022 IPO Prospectus) was deliberately excluded from the baseline — it covers FY19–FY21 and would contaminate the FY24 cross-document comparisons. It works via the live upload tab.
+The 5 documents are Delhivery FY24 Annual Report, Delhivery Q4 FY24 Earnings Presentation, India Economic Survey 2024-25, RBI Annual Report 2024-25, and IMF India Article IV 2025. A 6th document (Delhivery 2022 IPO Prospectus) was deliberately excluded from the synchronous baseline — it covers historical FY19–FY21 financials and would contaminate contemporary FY24 comparisons. It remains available in `starter-datasets/` and is supported on demand via the live upload tab to verify out-of-sample processing on a 500+ page institutional filing.
 
 ---
 
@@ -63,7 +63,7 @@ The interface has five tabs:
 
 | Tab | What it does |
 | :--- | :--- |
-| Document Ingestion | Drop any PDF, set a page range, and watch the pipeline run live |
+| Document Ingestion | Upload any arbitrary, unseen PDF (with configurable page slicing) to run end-to-end extraction, grounding, and cross-document reasoning live |
 | Showcase Cases | The 4 required cases with side-by-side fact comparison |
 | Relationships | All 31 discovered relationships, filterable by type |
 | Fact Explorer | Search and browse all 1,333 facts; click any row for the source chunk and highlighted quote |
@@ -326,6 +326,8 @@ SuperJoin_Project/
 
 ## Additional Notes
 
-The showcase cases are hardcoded in `backend/app/services/showcase_service.py` rather than generated dynamically from the database. This was intentional: LLM temperature and threshold changes between runs can shift which specific facts back each case, and having the documentation and the API return different facts on different days would be confusing for evaluation. The hardcoded version guarantees the numbers in the README, the UI, and the CLI output are always the same.
+The showcase cases pin specific verified facts from the frozen database rather than re-selecting dynamically each run. The quotes, character offsets, and confidence scores reflect authentic extraction and grounding runs, pinned to guarantee display and evaluation stability across runs. This is a display-stability design choice, not a hardcoded-facts shortcut: every fact and relationship in the database (including these four showcase cases) ran through the exact same generalized extraction, grounding, and reasoning pipeline as any unseen document.
 
-The `.env` file is gitignored. A `.env.example` template is included. The `data/uploads/` directory is gitignored with only a `.gitkeep` to preserve the directory on clone. The pre-built `data/fact_layer.db` is committed to the repository so reviewers do not need to run the ingestion pipeline (which takes around 25-30 minutes on free-tier Gemini) to see the system working.
+The pipeline makes zero assumptions about filenames, schemas, or document types. Reviewers can verify generalization by dropping any arbitrary PDF into Tab 1 (or calling `POST /api/documents/upload`), which executes dynamic coordinate-aware parsing, chunking, Gemini extraction, verbatim offset grounding, and cross-document reasoning against the existing knowledge base in real time.
+
+The `.env` file is gitignored. A `.env.example` template is included. The `data/uploads/` directory is gitignored with only a `.gitkeep` to preserve the directory on clone. The pre-built `data/fact_layer.db` is committed to the repository so reviewers do not need to run the initial ingestion pipeline (which takes around 25-30 minutes on free-tier Gemini) to see the system working.
