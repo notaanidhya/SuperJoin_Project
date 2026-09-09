@@ -1,6 +1,6 @@
 # Fact Knowledge Layer
 
-A system for extracting, grounding, and cross-referencing factual claims across institutional PDFs. Built for the Superjoin Engineering Intern screening.
+A system for extracting, grounding, and cross-referencing factual claims across institutional PDFs.
 
 Given a set of documents — annual reports, earnings presentations, macroeconomic surveys — the pipeline extracts every meaningful numerical or semantic claim, verifies it against a verbatim quote from the source text, and then reasons about how claims from different documents relate to each other: do they agree, disagree, or does the apparent conflict dissolve once you account for accounting definitions or reporting scope?
 
@@ -10,11 +10,9 @@ The problem that motivated the approach: standard RAG systems retrieve text but 
 
 ## Demo Video
 
-> **[Watch the 3-minute walkthrough here](https://your-video-link-here)**
+> **[Watch the 3-minute walkthrough on YouTube](https://www.youtube.com/watch?v=FP1CKIIMhjE)**
 >
 > Covers: live PDF upload, post-ingestion claim ledger, all 4 showcase cases, and the fact grounding evidence modal.
-
-*(Replace the link above once you have recorded and uploaded the video.)*
 
 ---
 
@@ -262,7 +260,7 @@ Candidate pairs go through a two-stage classifier:
 
 **Relationship count is sensitive to threshold.** Lowering the cosine similarity threshold from 0.70 to 0.65 increases candidate pairs and can surface relationships that a higher threshold misses, but it also creates more noise for the LLM auditor to filter. The current 0.65 setting worked well for this corpus; a different document set might need re-calibration.
 
-**Schema is currently fixed.** Facts have a fixed set of fields (subject, metric, value, unit, period). The assignment mentions a dynamically evolving schema as a brownie-point extension. The most practical path would be storing a JSON blob for extended attributes and letting the LLM populate whatever fields are relevant per document type.
+**Schema is currently fixed.** Facts have a fixed set of fields (subject, metric, value, unit, period). A natural extension is a dynamically evolving schema to capture domain-specific metrics. The most practical path would be storing a JSON blob for extended attributes and letting the LLM populate whatever fields are relevant per document type.
 
 **What I would build next:**
 - Multimodal chart parsing for image-based data in PDFs
