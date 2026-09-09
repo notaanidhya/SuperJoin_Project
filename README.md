@@ -1,9 +1,4 @@
 # Fact Knowledge Layer — Cross-Document Verification Engine
-
-**Superjoin Engineering Assignment · VIT 2026**
-
-An audit-grade document intelligence pipeline that transforms unstructured institutional PDFs into grounded, structured factual claims, indexes them via semantic vector embeddings, and performs contextual cross-document reasoning to surface corroborations, contradictions, and accounting reconciliations.
-
 ---
 
 ## Benchmark Results
