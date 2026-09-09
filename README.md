@@ -159,7 +159,7 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 | **Grounding** | Verified (char offset 64 in normalized chunk) | Verified (char offset 82 in normalized chunk) |
 
 - **Confidence**: `0.95` (95%)
-- **Engine Audit Verdict**: Genuine institutional forecast contradiction with zero vintage or advance-estimate ambiguity. Both the Reserve Bank of India and the International Monetary Fund publish forward-looking baseline projections for India's real GDP growth for the exact same future fiscal period (FY2025-26 / 2025/26). RBI projects 6.5%, whereas IMF staff projects 6.6%. The auditor verified that both institutions model identical national accounts metrics under market prices with no stated methodology divergence, establishing a genuine 10 basis-point institutional disagreement.
+- **Engine Audit Verdict**: Genuine institutional forecast contradiction with zero target fiscal period ambiguity. Both the Reserve Bank of India and the International Monetary Fund publish forward-looking baseline projections for India's real GDP growth for the exact same future fiscal period (FY2025-26 / 2025/26). RBI projects 6.5%, whereas IMF staff projects 6.6%. Both institutions model identical national accounts metrics under market prices. *Note on publication vintage*: While the target forecast period is identical (FY2025-26), the RBI report was published in May 2024 whereas the IMF Article IV was finalized in late 2024; thus, this represents an authentic macroeconomic forecast divergence across differing institutional information sets, with zero calendar-period mismatch.
 
 ---
 
@@ -183,7 +183,7 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 ---
 
 ### Case 4: Failure Analysis (`failure_analysis`)
-*Multi-Column Slide Wrapping & Footnote Detachment Diagnostic*
+*Multi-Column Slide Wrapping, Footnote Detachment, & The Scope vs. Unit Trap*
 
 | Diagnostic Metric | Initial Pipeline | Production Pipeline |
 | :--- | :--- | :--- |
@@ -191,11 +191,13 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 | **Root Cause 1** | Soft line-breaks (`\n`) in slide column text | Collapsing `\s+` into `' '` in validator |
 | **Root Cause 2** | Trailing footnote markers, e.g. `15,065\n(3)` | Footnote regex filter `\s*\(\d+\)` |
 | **Root Cause 3** | Vector bar chart labels lacking tabular lines | Surrounding paragraph & caption buffering |
+| **Root Cause 4** | Scope Conflation Trap (Segment vs Total Revenue) | Strict subject-scope hierarchy gating prior to unit math |
 
-- **Root Cause Analysis**:
+- **Root Cause Analysis & Forensic Case Studies**:
   1. *Columnar Soft Wraps*: PyMuPDF extracted multi-column slide text with internal newlines (e.g., `"15,065\n(3)\nDaily average fleet size"`), whereas LLMs generate cleanly normalized quotes (`"15,065 Daily average fleet size"`). Exact string match returned `False`.
   2. *Footnote Collisions*: Footnote superscript numbers (`(3)`) appended directly to metric figures broke exact numeric substring searches.
   3. *Vector Chart Flattening*: In Economic Survey charts (e.g. Charts I.28 & I.29), data points are drawn as graphical vector bar glyphs without table markup, causing table extractors to find 0 cells.
+  4. *The Scope vs. Unit Reconciliation Trap*: During exploratory vector candidate pairing, the engine paired Delhivery Consolidated Total Revenue (₹8,142 Crore in Annual Report) with Express Parcel Segment Revenue (₹81,421 Million in Q4 Presentation). A purely arithmetic unit converter would celebrate an apparent match ($8,142 \times 10 = 81,420$, matching $81,421$ within $0.01\%$). However, Express Parcel is only one operating division of Delhivery! Reconciling them without checking entity scope would have been an extraction scope failure. This highlighted the vital importance of multi-dimensional verification: an auditor must verify Subject Scope (Consolidated vs. Segment) before evaluating Unit Scale (Crores vs. Millions).
 - **Engineered Resolution**:
   - Implemented sequence collapsing (`re.sub(r'\s+', ' ', text)`) across both quote and chunk text.
   - Implemented footnote reference stripping (`re.sub(r'\s*\(\d+\)', '', text)`).
@@ -206,15 +208,19 @@ The system discovers and audits the 4 required showcase cases from live real-wor
 
 ## 🛠️ Key Design Decisions & Engineering Insights
 
-### 1. Single Source of Truth & Clean Corpus Isolation
-- Total database counts strictly match across all interfaces: **5 authoritative starter documents, 1,333 extracted facts, 1,293 verified grounded (97.0%), 40 ungrounded (3.0%)**.
-- Any temporary test upload artifacts are quarantined or cleaned, ensuring reproducible statistics for reviewers.
+### 1. Frozen Reference Run & Determinism
+- **Frozen Benchmark**: All numbers, statistics, and showcase cases in this repository represent a single, immutable reference run frozen in `data/fact_layer.db`: **5 documents, 1,333 extracted facts, 1,293 verified grounded (97.0%), 40 quarantined (3.0%), and 31 discovered relationships**.
+- **Run-to-Run Variance Note**: Corroborations identified via the deterministic Rule Fast-Path are $100\%$ stable across runs. Total relationship counts on fresh re-runs may vary by $\sim 10\text{--}15\%$ depending on candidate pairing thresholds ($0.70$ vs $0.65$) and LLM temperature on the Stage 2 auditor. Freezing this single canonical database guarantees total consistency between documentation, API responses, tests, and demo walkthroughs.
 
-### 2. Strict Quarantine for the 40 Ungrounded Facts
+### 2. Corpus Delimitation: The 5 Synchronous Starter Documents
+- The primary evaluation database indexes the **5 synchronous FY24 / 2024-25 starter documents** (411 pages total: Delhivery Annual Report FY24, Delhivery Q4 FY24 Earnings Presentation, India Economic Survey 2024-25, RBI Annual Report 2024-25, and IMF India Article IV 2025).
+- The 6th document (`01-delhivery-draft-red-herring-prospectus.pdf`, 522 pages) reflects a pre-IPO vintage (FY19–FY21) and was deliberately excluded from the synchronized FY24 macroeconomic/corporate baseline to avoid chronological distortion and boilerplate dilution. It is fully supported on-demand via the Tab 1 live upload dropzone with selective page-range slicing.
+
+### 3. Strict Quarantine for the 40 Ungrounded Facts
 - Facts that fail verbatim grounding are retained in SQLite with `grounding_verified = False` for failure-analysis transparency in the Fact Explorer.
 - In `fact_store.py`, `find_candidate_pairs()` explicitly filters `AND f.grounding_verified = 1`, guaranteeing that unverified or hallucinated claims **never** enter the cross-document reasoning engine.
 
-### 3. Eliminating Self-Document Data Leakage
+### 4. Eliminating Self-Document Data Leakage
 - In early prototypes, comparing chunks across the same document generated 34,830 redundant self-pairs (e.g., Delhivery Q4 Presentation page 6 vs page 14).
 - Fixed by enforcing physical document exclusion:
   ```sql
@@ -223,18 +229,18 @@ The system discovers and audits the 4 required showcase cases from live real-wor
   ```
 - Result: **0 self-document candidate pairs**.
 
-### 4. Rate-Limit Resilience on Free-Tier Gemini
+### 5. Rate-Limit Resilience on Free-Tier Gemini
 - Free-tier Gemini models enforce a strict 15 Requests Per Minute (RPM) ceiling.
 - Solved via a three-layer architecture:
   1. **Chunk Batching**: Grouping 3 substantive chunks per LLM prompt, reducing API calls by $3\times$.
   2. **Inter-Batch Pacing**: Setting `rate_limit_delay_seconds = 4.2` to mathematically stay under the 15 RPM cap.
   3. **Adaptive 429 Backoff**: Intercepting `RESOURCE_EXHAUSTED` responses, parsing the exact `retryDelay` from the API error payload, and sleeping until the quota resets.
 
-### 5. Rule Fast-Path Corroboration Heuristic
+### 6. Rule Fast-Path Corroboration Heuristic
 - Candidate pairs with identical numeric values, identical non-null time periods, and keyword-overlapping metric predicates are classified as `corroborates` immediately via programmatic rules.
 - Conserves LLM quota, yields $100\%$ determinism, and executes in $<1$ millisecond.
 
-### 6. Contradiction vs Reconciliation Prompt Separation
+### 7. Contradiction vs Reconciliation Prompt Separation
 - In corporate reporting, differences between Adjusted EBITDA and EBITDA are accounting definition divergences, not factual errors.
 - The prompt explicitly instructs Gemini:
   - *Metric Definition Differences* (Adjusted EBITDA vs EBITDA, Consolidated vs Standalone) $\rightarrow$ `reconciles` with `reconciliation_context`.

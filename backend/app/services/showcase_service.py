@@ -104,11 +104,13 @@ class ShowcaseService:
                     "grounding_verified": True
                 },
                 explanation=(
-                    "Genuine institutional forecast contradiction with zero vintage or timing ambiguity. Both the Reserve Bank of India "
+                    "Genuine institutional forecast contradiction with zero target fiscal period ambiguity. Both the Reserve Bank of India "
                     "(RBI Annual Report) and the International Monetary Fund (IMF Article IV Consultation) publish forward-looking baseline "
                     "projections for India's real GDP growth for the exact same future fiscal period (FY2025-26 / 2025/26). "
-                    "RBI projects 6.5%, whereas IMF staff projects 6.6%. The auditor verified that both institutions model identical national accounts "
-                    "metrics under market prices with no stated methodology divergence, establishing a genuine 10 basis-point institutional disagreement."
+                    "RBI projects 6.5%, whereas IMF staff projects 6.6%. Both institutions model identical national accounts "
+                    "metrics under market prices. Note on publication vintage: while the target forecast period is identical (FY2025-26), "
+                    "the RBI report was published in May 2024 whereas the IMF Article IV was finalized in late 2024; thus, this represents an "
+                    "authentic macroeconomic forecast divergence across differing institutional information sets, with zero calendar-period mismatch."
                 )
             ),
 
