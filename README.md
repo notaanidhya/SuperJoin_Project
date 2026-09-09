@@ -1,4 +1,17 @@
 # Fact Knowledge Layer — Cross-Document Verification Engine
+
+An enterprise-grade document intelligence system designed for automated cross-document forensics, factual verification, and contradiction detection across complex corporate, legal, and macroeconomic filings.
+
+### Project Overview
+
+Traditional document analysis pipelines and standard Retrieval-Augmented Generation (RAG) systems fail in high-stakes auditing contexts: they suffer from semantic drift, lack verbatim quote attribution, and cannot detect when two authoritative sources issue conflicting forecasts or disparate numerical scales (such as ₹ Crore vs. $ Million or GAAP vs. Non-GAAP measures).
+
+The **Fact Knowledge Layer** addresses this by decomposing unstructured PDFs into structured, atomic claims anchored to the physical source text with character-level physical grounding. It builds a persistent semantic knowledge graph across disparate documents and executes a two-stage hybrid reasoning engine (rule-based fast paths + contextual LLM auditing) to automatically detect:
+- **Corroborations**: Independent institutional consensus on critical economic and operational metrics.
+- **Contradictions**: Direct forecast or historical metric conflicts between independent bodies (such as central bank projections vs. international financial institution baselines).
+- **Reconciliations**: Apparent numerical divergences explained by unit scale factors, accounting standard variations (e.g., Adjusted EBITDA vs. Statutory EBITDA), or reporting scope differences.
+- **Forensic Failure Analysis**: Automatic isolation and quarantine of ungrounded or ambiguous claims to safeguard downstream reasoning and maintain an untainted audit trail.
+
 ---
 
 ## Benchmark Results
