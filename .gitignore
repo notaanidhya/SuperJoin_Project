@@ -79,6 +79,9 @@ scripts/test_*.py
 *.swp
 *.swo
 *~
+*.tmp
+*.bak
+*.orig
 .DS_Store
 Thumbs.db
 Desktop.ini
